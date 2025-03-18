@@ -8,8 +8,9 @@ services:
       retries: 10
     ports:
       - 8000:8000
-    environment:
-      - HUGGING_FACE_HUB_TOKEN:'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'
+    env_file:
+      - secrets.env
+    ipc: host
   python:
     image: im_ex_smolvlm
     depends_on:
