@@ -2,15 +2,19 @@ services:
   vllm:
     image: vllm-cpu-env
     healthcheck:
-      test: curl -f http://localhost:8000/v1/chat/completions || exit 1
+      #test: curl -f http://localhost:8000/v1/chat/completions || exit 1
+      test: curl -f http://localhost:8000/v1/models || exit 1
       interval: 30s
       timeout: 10s
       retries: 10
     ports:
       - 8000:8000
-    env_file:
+    env_file: #creo que esto no hace falta, que lo lee por defecto si estan en el mismo directorio
       - secrets.env
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
     ipc: host
+    
   python:
     image: im_ex_smolvlm
     depends_on:
