@@ -2,7 +2,6 @@ services:
   vllm:
     image: vllm-cpu-env
     healthcheck:
-      #test: curl -f http://localhost:8000/v1/chat/completions || exit 1
       test: curl -f http://localhost:8000/v1/models || exit 1
       interval: 30s
       timeout: 10s
@@ -21,9 +20,6 @@ services:
     depends_on:
       vllm:
         condition: service_healthy
-    #environment:
-     # - MY_URL='http://localhost:8000/v1/chat/completions'
-      #- MY_MODEL='HuggingfaceTB/SmolVLM-256M-Instruct '
     environment:
       - MY_URL=http://vllm:8000
       - MY_MODEL=HuggingfaceTB/SmolVLM-256M-Instruct
