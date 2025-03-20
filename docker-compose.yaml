@@ -14,12 +14,17 @@ services:
     environment:
       - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
     ipc: host
+    command: ["--model", "HuggingfaceTB/SmolVLM-256M-Instruct", "--trust-remote-code"]
 
   python:
     image: im_ex_smolvlm
     depends_on:
       vllm:
         condition: service_healthy
+    #environment:
+     # - MY_URL='http://localhost:8000/v1/chat/completions'
+      #- MY_MODEL='HuggingfaceTB/SmolVLM-256M-Instruct '
     environment:
-      - MY_URL:'http://localhost:8000/v1/chat/completions'
-      - MY_MODEL:'HuggingfaceTB/SmolVLM-256M-Instruct '
+      - MY_URL=http://vllm:8000
+      - MY_MODEL=HuggingfaceTB/SmolVLM-256M-Instruct
+    ipc: host

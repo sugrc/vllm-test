@@ -3,12 +3,11 @@ import json
 import os
 
 
-#ipvllm
-pre_url = os.getenv('MY_URL','http://localhost:8000/v1/chat/completions') #url declared as an env var, if empty, takes that url by default
+ip_vllm = os.getenv('MY_URL','http://localhost:8000') #url declared as an env var, if empty, takes localhost:8000 by default
 
 model = os.getenv('MY_MODEL','HuggingfaceTB/SmolVLM-256M-Instruct') #model declared as an env var
 
-#url= pre_url + '/v1/chat/completions'
+url= ip_vllm + '/v1/chat/completions'
 
 payload = {
     "model": model,
@@ -29,8 +28,6 @@ payload = {
 headers = {
     "Content-Type": "application/json"
 }
-
-#build url+endpoint
 
 response = requests.post(url, json=payload, headers=headers)
 
