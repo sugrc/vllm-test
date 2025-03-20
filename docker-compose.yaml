@@ -1,0 +1,26 @@
+services:
+  vllm:
+    image: vllm-cpu-env
+    healthcheck:
+      test: curl -f http://localhost:8000/v1/models || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    ports:
+      - 8000:8000
+    env_file:
+      - secrets.env
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+    ipc: host
+    command: ["--model", "HuggingfaceTB/SmolVLM-256M-Instruct", "--trust-remote-code"]
+
+  python:
+    image: im_ex_smolvlm
+    depends_on:
+      vllm:
+        condition: service_healthy
+    environment:
+      - MY_URL=http://vllm:8000
+      - MY_MODEL=HuggingfaceTB/SmolVLM-256M-Instruct
+    ipc: host

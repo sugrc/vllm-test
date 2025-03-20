@@ -2,9 +2,12 @@ import requests
 import json
 import os
 
-url = os.getenv('MY_URL','http://localhost:8000/v1/chat/completions') #url declared as an env var, if empty, takes that url by default
+
+ip_vllm = os.getenv('MY_URL','http://localhost:8000') #url declared as an env var, if empty, takes localhost:8000 by default
 
 model = os.getenv('MY_MODEL','HuggingfaceTB/SmolVLM-256M-Instruct') #model declared as an env var
+
+url= ip_vllm + '/v1/chat/completions'
 
 payload = {
     "model": model,
