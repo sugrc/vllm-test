@@ -1,7 +1,18 @@
 import requests
 import json
 import os
+import base64
 
+path = os.getcwd()
+
+image_name = "star.jpg" #introduce name of the image
+
+image_path = os.path.join(path, image_name)
+
+with open(image_path, "rb") as image:
+    image_bin = image.read()
+
+image_base64 = base64.b64encode(image_bin).decode("utf-8")
 
 ip_vllm = os.getenv('MY_URL','http://localhost:8000') #url declared as an env var, if empty, takes localhost:8000 by default
 
@@ -19,7 +30,7 @@ payload = {
         {
             "role": "user",
             "content": "Describe this image.",
-            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/edwMjcAAAAASUVORK5CYII="
+            "image": image_base64
         }
     ],
     "max_tokens": 50
