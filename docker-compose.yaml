@@ -20,6 +20,8 @@ services:
     depends_on:
       vllm:
         condition: service_healthy
+    volumes:
+      - /home/a939219/vllm-test/imagenes:/app/images
     environment:
       - MY_URL=http://vllm:8000
       - MY_MODEL=HuggingfaceTB/SmolVLM-256M-Instruct
