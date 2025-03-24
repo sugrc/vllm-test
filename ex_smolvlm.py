@@ -3,34 +3,41 @@ import json
 import os
 import base64
 import time
+import logging
+import argparse
 
 
-path = os.getcwd() #introduce the path of the directory
+path = '/app/images'
+logging.info("Path")
 
-l_images = [file for file in os.listdir(path) if file.endswith((".png",".jpg"))]
+list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
+logging.info("List of images")
 
 
-def image_to_base64(im):
+def image_to_base64(image):
     """
     Encodes an image to base64.
     Params:
-        im: name of the image
+        image: name of the image
     Returns:
-        str of the image encoded in base64
+        string of the image encoded in base64
     """
-    with open(im, "rb") as image:
-        image_bin = image.read()
-    image_base64 = base64.b64encode(image_bin).decode("utf-8")
-    return image_base64
+    try:
+        with open(image, "rb") as image:
+            image_bin = image.read()
+        image_base64 = base64.b64encode(image_bin).decode("utf-8")
+        return image_base64
+    except Exception as e:
+        print(e)
+
+list_images_base64 = list(map(image_to_base64,list_images))
+logging.info("List of encoded images")
 
 
-l_images_base64 = list(map(image_to_base64,l_images))
 
+ip_vllm = os.getenv('IP','http://localhost:8000') #url declared as an env var, if empty, takes localhost:8000 by default
 
-
-ip_vllm = os.getenv('MY_URL','http://localhost:8000') #url declared as an env var, if empty, takes localhost:8000 by default
-
-model = os.getenv('MY_MODEL','HuggingfaceTB/SmolVLM-256M-Instruct') #model declared as an env var
+model = os.getenv('MODEL','HuggingfaceTB/SmolVLM-256M-Instruct') #model declared as an env var
 
 url= ip_vllm + '/v1/chat/completions'
 
@@ -40,7 +47,7 @@ def make_a_payload(image_base64):
     """
     Given an encoded image, makes a payload in json format
     """
-    image_json = "data:image/jpg;base64," + image_base64
+    image_json = "data:image/jpg;base64," + str(image_base64)
     payload = {
         "model": model,
         "messages": [
@@ -60,7 +67,8 @@ def make_a_payload(image_base64):
     return payload
 
 
-l_payload = list(map(make_a_payload,l_images_base64))
+list_payload = list(map(make_a_payload,list_images_base64))
+logging.info("List of payload")
 
 
 
@@ -70,11 +78,12 @@ headers = {
     "Content-Type": "application/json"
 }
 
-for payload in l_payload:
+for payload in list_payload:
     response = requests.post(url, json=payload, headers=headers)
 
     if response.status_code == 200:
         print("Answer:", response.json())
+        logging.info("Request sent")
     else:
         print(f"Error: {response.status_code}, {response.text}")
 
