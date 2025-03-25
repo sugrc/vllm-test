@@ -1,15 +1,11 @@
 import requests
-import json
 import os
 import base64
-import time
 import logging
 import argparse
 
 logging.basicConfig(level=logging.INFO)
 
-time.sleep(100)
-print("sleeping zzzZZZ")
 
 path = '/app/images'
 logging.info("Path")
@@ -39,9 +35,9 @@ logging.info("List of encoded images")
 
 
 
-ip_vllm = os.getenv('IP','http://vllm:8000') #url declared as an env var, if empty, takes localhost:8000 by default
+ip_vllm = os.getenv('IP','http://vllm:8000') 
 
-model = os.getenv('MODEL','HuggingfaceTB/SmolVLM-256M-Instruct') #model declared as an env var
+model = os.getenv('MODEL','HuggingfaceTB/SmolVLM-256M-Instruct')
 
 url= ip_vllm + '/v1/chat/completions'
 
@@ -84,12 +80,10 @@ headers = {
 
 for payload in list_payload:
     response = requests.post(url, json=payload, headers=headers)
+    logging.info("Request sent")
 
     if response.status_code == 200:
         print("Answer:", response.json())
-        logging.info("Request sent")
     else:
         print(f"Error: {response.status_code}, {response.text}")
-
-    time.sleep(60)
 
