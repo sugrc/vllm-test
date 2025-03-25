@@ -6,6 +6,10 @@ import time
 import logging
 import argparse
 
+logging.basicConfig(level=logging.INFO)
+
+time.sleep(100)
+print("sleeping zzzZZZ")
 
 path = '/app/images'
 logging.info("Path")
@@ -35,7 +39,7 @@ logging.info("List of encoded images")
 
 
 
-ip_vllm = os.getenv('IP','http://localhost:8000') #url declared as an env var, if empty, takes localhost:8000 by default
+ip_vllm = os.getenv('IP','http://vllm:8000') #url declared as an env var, if empty, takes localhost:8000 by default
 
 model = os.getenv('MODEL','HuggingfaceTB/SmolVLM-256M-Instruct') #model declared as an env var
 
