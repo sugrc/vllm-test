@@ -23,6 +23,6 @@ services:
     volumes:
       - ./images:/app/images
     environment:
-      - IPL=http://vllm:8000
+      - IP=http://vllm:8000
       - MODEL=HuggingfaceTB/SmolVLM-256M-Instruct
     ipc: host

@@ -8,10 +8,10 @@ logging.basicConfig(level=logging.INFO)
 
 
 path = '/app/images'
-logging.info("Path")
+logging.info("Path: %s", path)
 
 list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
-logging.info("List of images")
+logging.info("List of images: %s", list_images)
 
 
 def image_to_base64(image):
@@ -31,7 +31,7 @@ def image_to_base64(image):
         print(e)
 
 list_images_base64 = list(map(image_to_base64,list_images))
-logging.info("List of encoded images")
+logging.info("List of encoded images: %s",list_images_base64)
 
 
 
@@ -78,12 +78,16 @@ headers = {
     "Content-Type": "application/json"
 }
 
+
+image_counter=0 #counter to show which image
+
 for payload in list_payload:
     response = requests.post(url, json=payload, headers=headers)
-    logging.info("Request sent")
-
+    logging.info("Request sent for file: %s",list_images[image_counter])
+    logging.info("Payload sent: %s", payload)
+    logging.info("URL: %s", url)
+    image_counter +=1
     if response.status_code == 200:
-        print("Answer:", response.json())
+        logging.info("Answer: %s", response.json())
     else:
-        print(f"Error: {response.status_code}, {response.text}")
-
+        logging.error("Error: %s, %s", response.status_code, response.text)
