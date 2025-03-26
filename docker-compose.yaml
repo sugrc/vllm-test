@@ -17,6 +17,7 @@ services:
 
   python:
     build: .
+    entrypoint: ["python3", "/app/ex_smolvlm.py", "--path", "/app/images"]
     depends_on:
       vllm:
         condition: service_healthy
