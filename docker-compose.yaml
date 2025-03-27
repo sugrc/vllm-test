@@ -16,11 +16,14 @@ services:
     command: ["--model", "HuggingfaceTB/SmolVLM-256M-Instruct", "--trust-remote-code"]
 
   python:
-    image: im_ex_smolvlm
+    build: .
+    entrypoint: ["python3", "/app/ex_smolvlm.py", "--path", "/app/images"]
     depends_on:
       vllm:
         condition: service_healthy
+    volumes:
+      - ./images:/app/images
     environment:
-      - MY_URL=http://vllm:8000
-      - MY_MODEL=HuggingfaceTB/SmolVLM-256M-Instruct
+      - IP=http://vllm:8000
+      - MODEL=HuggingfaceTB/SmolVLM-256M-Instruct
     ipc: host
