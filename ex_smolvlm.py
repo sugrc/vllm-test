@@ -19,9 +19,6 @@ args = parser.parse_args()
 path = args.path
 logging.info("Path: %s", path)
 
-#path = '/app/images'
-#logging.info("Path: %s", path)
-
 list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
 logging.info("List of images: %s", list_images)
 
