@@ -7,8 +7,6 @@ import argparse
 logging.basicConfig(level=logging.INFO)
 
 
-
-
 ip_vllm = os.getenv('IP','http://vllm:8000') 
 
 model = os.getenv('MODEL','HuggingfaceTB/SmolVLM-256M-Instruct')
