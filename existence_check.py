@@ -6,26 +6,7 @@ import argparse
 
 logging.basicConfig(level=logging.INFO)
 
-parser = argparse.ArgumentParser()
 
-parser.add_argument(
-    '--path',
-    type=str,
-    required=True
-)
-parser.add_argument(
-    '--object',
-    type=str,
-    required=True
-)
-args = parser.parse_args()
-
-
-path = args.path
-logging.info("Path: %s", path)
-
-object = args.object
-logging.info("Object: %s", object)
 
 
 ip_vllm = os.getenv('IP','http://vllm:8000') 
@@ -118,6 +99,26 @@ def existence_check(object, image):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '--path',
+        type=str,
+        required=True
+    )
+    parser.add_argument(
+        '--object',
+        type=str,
+        required=True
+    )
+    args = parser.parse_args()
+
+    path = args.path
+    logging.info("Path: %s", path)
+
+    object = args.object
+    logging.info("Object: %s", object)
+
     list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
     logging.info("List of images: %s", list_images)
 
