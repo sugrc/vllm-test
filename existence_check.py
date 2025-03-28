@@ -28,9 +28,18 @@ object = args.object
 logging.info("Object: %s", object)
 
 
-list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
-logging.info("List of images: %s", list_images)
+ip_vllm = os.getenv('IP','http://vllm:8000') 
 
+model = os.getenv('MODEL','HuggingfaceTB/SmolVLM-256M-Instruct')
+
+url= ip_vllm + '/v1/chat/completions'
+
+headers = {
+    "Content-Type": "application/json"
+}
+
+
+# --- FUNCTIONS ---
 
 def image_to_base64(image):
     """
@@ -48,21 +57,17 @@ def image_to_base64(image):
     except Exception as e:
         print(e)
 
-list_images_base64 = list(map(image_to_base64,list_images))
-logging.info("List of encoded images: %s",list_images_base64)
 
-
-ip_vllm = os.getenv('IP','http://vllm:8000') 
-
-model = os.getenv('MODEL','HuggingfaceTB/SmolVLM-256M-Instruct')
-
-url= ip_vllm + '/v1/chat/completions'
-
-
-def make_a_payload(image_base64):
+def query_vlm(image, prompt):
     """
-    Given an encoded image, makes a payload in json format
+    Given an image, makes a payload in json format
+    Params:
+        image: name of the image
+        prompt: what to analize in the image
+    Returns: 
+        payload in json format
     """
+    image_base64 = image_to_base64(image)
     question = "Is there " + str(object) + " in the image?"
     logging.info("Question: %s", question)
     image_json = "data:image/jpg;base64," + str(image_base64)
@@ -75,73 +80,51 @@ def make_a_payload(image_base64):
             },
             {
                 "role": "user",
-                "content": str(question),
+                "content": prompt,
                 "image": image_json
             }
         ],
         "max_tokens": 50
     }
-
     return payload
 
 
-list_payload = list(map(make_a_payload,list_images_base64))
-logging.info("List of payload")
-
-
-headers = {
-    "Content-Type": "application/json"
-}
-
-
-def existence_check(answer):
-    if ("yes" or "Yes") in answer:
-        return True
-    else: 
-        return False
-
-image_counter=0 #counter to show which image
-
-for payload in list_payload:
+def existence_check(object, image):
+    """
+    Checks the existence of a given object in a given image.
+    Params:
+        object: object to be checked
+        image: image to be analized
+    Returns:
+        True if the object is in the image, False if not.
+    """
+    prompt = "Is there " + str(object) + " in the image?"
+    payload = query_vlm(image, prompt)
     response = requests.post(url, json=payload, headers=headers)
-    logging.info("Request sent for file: %s",list_images[image_counter])
+    logging.info("Request sent for: %s", image)
     logging.info("Payload sent: %s", payload)
     logging.info("URL: %s", url)
-    image_counter +=1
     if response.status_code == 200:
         logging.info("Answer: %s", response.json())
         content = response.json()
-        logging.info(type(content))
         answer = content['choices'][0]['message']['content']
-        bool_answer = existence_check(answer)
-        logging.info(bool_answer)
         logging.info("Content: %s", str(content))
+        if ("yes" or "Yes") in answer:
+            return True
+        else: 
+            return False
     else:
         logging.error("Error: %s, %s", response.status_code, response.text)
 
 
+def main():
+    list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
+    logging.info("List of images: %s", list_images)
 
-"""
-The response has this format:
-Answer: {'id': 'chatcmpl-91684fc3ece941fe8a9fd3d50be34ad0',
- 'object': 'chat.completion', 
- 'created': 1742912756, 
- 'model': 'HuggingfaceTB/SmolVLM-256M-Instruct', 
- 'choices': [{'index': 0, 
-    'message': 
-        {'role': 'assistant', 
-        'reasoning_content': None, 
-        'content': '<RESPONSE>', 
-        'tool_calls': []}, 
-    'logprobs': None, 
-    'finish_reason': 'length', 
-    'stop_reason': None}], 
-'usage': {'prompt_tokens': 24, 
-'total_tokens': 74, 
-'completion_tokens': 50, 
-'prompt_tokens_details': None}, 
-'prompt_logprobs': None}
+    for image in list_images:
+        existence_check(object, image)
+        logging.info("Bool for %s: %s ", image, existence_check(object,image))
 
-So, it is a dictionary. To access to the message we c
 
-"""
+if __name__ == "__main__":
+    main()
