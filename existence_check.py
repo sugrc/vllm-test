@@ -20,6 +20,7 @@ headers = {
 
 # --- FUNCTIONS ---
 
+
 def image_to_base64(image):
     """
     Encodes an image to base64.
@@ -34,7 +35,8 @@ def image_to_base64(image):
         image_base64 = base64.b64encode(image_bin).decode("utf-8")
         return image_base64
     except Exception as e:
-        print(e)
+        logging.error(e)
+        raise e
 
 
 def query_vlm(image, prompt):
@@ -46,26 +48,28 @@ def query_vlm(image, prompt):
     Returns: 
         payload in json format
     """
-    image_base64 = image_to_base64(image)
-    question = "Is there " + str(object) + " in the image?"
-    logging.info("Question: %s", question)
-    image_json = "data:image/jpg;base64," + str(image_base64)
-    payload = {
-        "model": model,
-        "messages": [
-            {
-              "role": "system",
-                "content": "You are a vision-language model."
-            },
-            {
-                "role": "user",
-                "content": prompt,
-                "image": image_json
-            }
-        ],
-        "max_tokens": 50
-    }
-    return payload
+    try:
+        image_base64 = image_to_base64(image)
+        image_json = "data:image/jpg;base64," + str(image_base64)
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                "role": "system",
+                    "content": "You are a vision-language model."
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                    "image": image_json
+                }
+            ],
+            "max_tokens": 50
+        }
+        return payload
+    except Exception as e:
+        logging.error(e)
+        raise e
 
 
 def existence_check(object, image):
@@ -120,7 +124,13 @@ def main():
     list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
     logging.info("List of images: %s", list_images)
 
-    for image in list_images:
+    list_images_path =[]
+    for each in list_images:
+        image_path = path + "/" + each
+        list_images_path.append(image_path)
+    logging.info("List of images: %s", list_images_path)
+
+    for image in list_images_path:
         existence_check(object, image)
         logging.info("Bool for %s: %s ", image, existence_check(object,image))
 
