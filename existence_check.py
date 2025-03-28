@@ -66,7 +66,17 @@ def query_vlm(image, prompt):
             ],
             "max_tokens": 50
         }
-        return payload
+        response = requests.post(url, json=payload, headers=headers)
+        logging.info("Request sent for: %s", image)
+        logging.info("Payload sent: %s", payload)
+        logging.info("URL: %s", url)
+        if response.status_code == 200:
+            logging.info("Answer: %s", response.json())
+            content = response.json()
+            answer = content['choices'][0]['message']['content']
+            return answer
+        else:
+            logging.error("Error: %s, %s", response.status_code, response.text)
     except Exception as e:
         logging.error(e)
         raise e
@@ -82,22 +92,11 @@ def existence_check(object, image):
         True if the object is in the image, False if not.
     """
     prompt = "Is there " + str(object) + " in the image?"
-    payload = query_vlm(image, prompt)
-    response = requests.post(url, json=payload, headers=headers)
-    logging.info("Request sent for: %s", image)
-    logging.info("Payload sent: %s", payload)
-    logging.info("URL: %s", url)
-    if response.status_code == 200:
-        logging.info("Answer: %s", response.json())
-        content = response.json()
-        answer = content['choices'][0]['message']['content']
-        logging.info("Content: %s", str(content))
-        if ("yes" or "Yes") in answer:
-            return True
-        else: 
-            return False
-    else:
-        logging.error("Error: %s, %s", response.status_code, response.text)
+    answer = query_vlm(image, prompt)
+    if ("yes" or "Yes") in answer:
+        return True
+    else: 
+        return False
 
 
 def main():
