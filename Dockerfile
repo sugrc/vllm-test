@@ -1,11 +1,13 @@
 FROM python:3.12
 
-RUN pip install requests
+RUN pip install poetry
 
 WORKDIR /app
 
-COPY ex_smolvlm.py .
-
+COPY poetry.lock .
+COPY pyproject.toml .
 COPY existence_check.py .
 
-CMD ["python3","ex_smolvlm.py"]
+RUN poetry install --no-root 
+
+CMD ["python3","existence_check.py"]
