@@ -97,6 +97,43 @@ def existence_check(object, image):
         return True
     else: 
         return False
+    
+    
+def visibility_check(attribute, image):
+    """
+    Checks the visibility of a given attribute in a given image.
+    Params:
+        attribute: attribute to be checked
+        image: image to be analized
+    Returns:
+        True if the attribute is visible in the image, False if not.
+    """
+    prompt = "Can you see " + str(attribute) + " in the image?"
+    answer = query_vlm(image, prompt)
+    if ("yes" or "Yes") in answer:
+        return True
+    else: 
+        return False
+    
+    
+def description_match_check(attribute, description, image):
+    """
+    Checks if the given attribute matches the given description in the image
+    Params:
+        attribute: attribute to be checked
+        description: description of the attribute
+        image: image to be analized
+    Returns:
+        True if the object is in the image, False if not.
+    """
+    if visibility_check(attribute, image):
+        prompt = "Is the " + str(attribute) + str(description) + " ?"
+        answer = query_vlm(image, prompt)
+        if ("yes" or "Yes") in answer:
+            return True
+        else: 
+            return False
+    return False
 
 
 def main():
@@ -112,6 +149,11 @@ def main():
         type=str,
         required=True
     )
+    parser.add_argument(
+        '--attributes',
+        type=list,
+        required=True
+    )
     args = parser.parse_args()
 
     path = args.path
@@ -119,6 +161,9 @@ def main():
 
     object = args.object
     logging.info("Object: %s", object)
+
+    list_attributes = args.attributes
+    logging.info("List of attributes")
 
     list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
     logging.info("List of images: %s", list_images)
@@ -128,10 +173,23 @@ def main():
         image_path = path + "/" + each
         list_images_path.append(image_path)
     logging.info("List of images: %s", list_images_path)
-
+    
     for image in list_images_path:
-        existence_check(object, image)
-        logging.info("Bool for %s: %s ", image, existence_check(object,image))
+        if existence_check(object, image):
+            logging.info("Existence check for %s: %s ", image, existence_check(object,image))     
+            for attribute_pair in list_attributes:
+                attribute = attribute_pair[0]
+                logging.info('Attribute: %s', attribute)
+                description = attribute_pair[1]
+                logging.info('Description: %s', description)
+                description_match_check(attribute, description, image)
+                logging.info("Description match check for %s with attribute %s and description %s: %s ", 
+                             image, 
+                             attribute, 
+                             description, 
+                             description_match_check(attribute, description, image))
+
+
 
 
 if __name__ == "__main__":
