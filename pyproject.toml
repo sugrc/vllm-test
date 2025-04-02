@@ -1,0 +1,17 @@
+[project]
+name = "realism-evacuation"
+version = "1.0.0"
+description = ""
+authors = [
+    {name = "sugrc",email = "susana.garcia@atos.net"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)"
+]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
