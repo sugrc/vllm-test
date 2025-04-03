@@ -174,7 +174,10 @@ def main():
         list_images_path.append(image_path)
     logging.info("List of images: %s", list_images_path)
     
+
     for image in list_images_path:
+        confidence_score = 0
+        realism_score = 0
         if existence_check(object, image):
             logging.info("Existence check for %s: %s ", image, existence_check(object,image))     
             for attribute_pair in attributes:
@@ -182,12 +185,22 @@ def main():
                 logging.info('Attribute: %s', attribute)
                 description = attribute_pair[1]
                 logging.info('Description: %s', description)
-                description_match_check(attribute, description, image)
+                bool_visibility = visibility_check(attribute, image)
+                bool_description = description_match_check(attribute, description, image)
                 logging.info("Description match check for %s with attribute %s and description %s: %s ", 
                              image, 
                              attribute, 
                              description, 
                              description_match_check(attribute, description, image))
+                confidence_score += (bool_visibility * 1)
+                realism_score += ((bool_visibility * 1) * (bool_description * 1))
+        logging.info("Confidence score is: %s", confidence_score)
+        logging.info("Realism score is: %s", realism_score)
+        if confidence_score > 0 :
+            normalized_attribute_score = realism_score/confidence_score
+        else:
+            normalized_attribute_score = 0
+        logging.info("Normalized attribute score for %s is : %s", image, normalized_attribute_score)
 
 
 if __name__ == "__main__":
