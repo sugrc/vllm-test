@@ -3,6 +3,7 @@ import os
 import base64
 import logging
 import argparse
+import ast
 
 logging.basicConfig(level=logging.INFO)
 
@@ -68,8 +69,6 @@ def query_vlm(image, prompt):
         }
         response = requests.post(url, json=payload, headers=headers)
         logging.info("Request sent for: %s", image)
-        logging.info("Payload sent: %s", payload)
-        logging.info("URL: %s", url)
         if response.status_code == 200:
             logging.info("Answer: %s", response.json())
             content = response.json()
@@ -151,7 +150,7 @@ def main():
     )
     parser.add_argument(
         '--attributes',
-        type=list,
+        type=str,
         required=True
     )
     args = parser.parse_args()
@@ -162,8 +161,9 @@ def main():
     object = args.object
     logging.info("Object: %s", object)
 
-    list_attributes = args.attributes
-    logging.info("List of attributes")
+    attributes = ast.literal_eval(args.attributes)
+    logging.info("Attributes: %s", attributes)
+    logging.info("type of atributes: %s", type(attributes))
 
     list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
     logging.info("List of images: %s", list_images)
@@ -177,7 +177,7 @@ def main():
     for image in list_images_path:
         if existence_check(object, image):
             logging.info("Existence check for %s: %s ", image, existence_check(object,image))     
-            for attribute_pair in list_attributes:
+            for attribute_pair in attributes:
                 attribute = attribute_pair[0]
                 logging.info('Attribute: %s', attribute)
                 description = attribute_pair[1]
@@ -188,8 +188,6 @@ def main():
                              attribute, 
                              description, 
                              description_match_check(attribute, description, image))
-
-
 
 
 if __name__ == "__main__":
