@@ -17,7 +17,7 @@ services:
 
   python:
     build: .
-    entrypoint: ["python3", "/app/existence_check.py", "--path", "/app/images","--object", "cat"]
+    entrypoint: ["python3", "/app/existence_check.py", "--path", "/app/images","--object", "cat", "--attributes", "[['tail','white'],['collar','red']]"]
     depends_on:
       vllm:
         condition: service_healthy
