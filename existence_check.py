@@ -298,22 +298,5 @@ def main():
         logging.info("Relationship score for %s is: %s", image, relationship_score)
 
 
-
-
-                
-
-
-
-
-
 if __name__ == "__main__":
     main()
-
-"""
-For second dimension:
-
-Params: List of n entities (str) and matrix nxn (list of lists) with the relations
-
-Entities e_i and e_j and their relationship r_ij. Matrix. Not simmetric.
-Counterexample: It's not the same "a person holding a pen" than "a pen holding a person"
-"""
