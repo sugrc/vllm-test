@@ -3,6 +3,7 @@ import os
 import base64
 import logging
 import argparse
+import ast
 
 logging.basicConfig(level=logging.INFO)
 
@@ -68,12 +69,13 @@ def query_vlm(image, prompt):
         }
         response = requests.post(url, json=payload, headers=headers)
         logging.info("Request sent for: %s", image)
-        logging.info("Payload sent: %s", payload)
-        logging.info("URL: %s", url)
+        #logging.info("Payload sent: %s", payload)
+        #logging.info("URL: %s", url)
         if response.status_code == 200:
-            logging.info("Answer: %s", response.json())
+            #logging.info("Answer: %s", response.json())
             content = response.json()
             answer = content['choices'][0]['message']['content']
+            logging.info("Answer: %s", answer)
             return answer
         else:
             logging.error("Error: %s, %s", response.status_code, response.text)
@@ -97,6 +99,92 @@ def existence_check(object, image):
         return True
     else: 
         return False
+    
+    
+def visibility_check(attribute, image):
+    """
+    Checks the visibility of a given attribute in a given image.
+    Params:
+        attribute: attribute to be checked
+        image: image to be analized
+    Returns:
+        True if the attribute is visible in the image, False if not.
+    """
+    prompt = "Can you see " + str(attribute) + " in the image?"
+    answer = query_vlm(image, prompt)
+    if ("yes" or "Yes") in answer:
+        return True
+    else: 
+        return False
+    
+    
+def description_match_check(attribute, description, image):
+    """
+    Checks if the given attribute matches the given description in the image
+    Params:
+        attribute: attribute to be checked
+        description: description of the attribute
+        image: image to be analized
+    Returns:
+        True if the object is in the image, False if not.
+    """
+    if visibility_check(attribute, image):
+        prompt = "Is the " + str(attribute) + str(description) + " ?"
+        answer = query_vlm(image, prompt)
+        if ("yes" or "Yes") in answer:
+            return True
+        else: 
+            return False
+    return False
+
+
+def realism_check(entity, image):
+    """
+    Checks the realism of a given entity in a given image.
+    Params:
+        entity: entity to be checked
+        image: image to be analized
+    Returns:
+        True if the entity is realistic and natural, False if not.
+    """
+    prompt = "Is " + str(entity) + " realistic and natural in this image?"
+    answer = query_vlm(image, prompt)
+    if ("yes" or "Yes") in answer:
+        return True
+    else: 
+        return False
+    
+def relationship_check(entity_1, entity_2, relation, image):
+    """
+    ...
+    Params:
+        entity_1: entity to be checked
+        entity_2:
+        relation: 
+        image: image to be analized
+    Returns:
+        True if ..., False if not.
+    """
+    prompt = "Is " + str(entity_1) + " " + str(relation) + " " + str(entity_2) + " in this image?"
+    answer = query_vlm(image, prompt)
+    if ("yes" or "Yes") in answer:
+        return True
+    else: 
+        return False
+    
+
+"""
+def normalized_attribute_score_function(image, attributes):
+
+    Scores the given image 
+    Params:
+        image: image 
+        attributes: list of lists with two elements ['attribute','description']
+    Returns:
+        Integer wich scores the image
+        
+    confidence_score = 0
+"""
 
 
 def main():
@@ -112,6 +200,16 @@ def main():
         type=str,
         required=True
     )
+    parser.add_argument(
+        '--attributes',
+        type=str,
+        required=True
+    )
+    parser.add_argument(
+        '--relationships',
+        type=str,
+        required=True
+    )
     args = parser.parse_args()
 
     path = args.path
@@ -119,6 +217,13 @@ def main():
 
     object = args.object
     logging.info("Object: %s", object)
+
+    attributes = ast.literal_eval(args.attributes)
+    logging.info("Attributes: %s", attributes)
+    
+    relationships = ast.literal_eval(args.relationships)
+    logging.info("Relationships: %s", relationships)
+    
 
     list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
     logging.info("List of images: %s", list_images)
@@ -130,9 +235,85 @@ def main():
     logging.info("List of images: %s", list_images_path)
 
     for image in list_images_path:
-        existence_check(object, image)
-        logging.info("Bool for %s: %s ", image, existence_check(object,image))
+
+        # First dimension: Evaluation of visual attributes
+
+        logging.info("Evaluation of visual attributes")
+        confidence_score = 0
+        realism_score = 0
+        if existence_check(object, image):
+            logging.info("Existence check for %s: %s ", image, existence_check(object,image))     
+            for attribute_pair in attributes:
+                attribute = attribute_pair[0]
+                logging.info('Attribute: %s', attribute)
+                description = attribute_pair[1]
+                logging.info('Description: %s', description)
+                bool_visibility = visibility_check(attribute, image)
+                bool_description = description_match_check(attribute, description, image)
+                logging.info("Description match check for %s with attribute %s and description %s: %s ", 
+                             image, 
+                             attribute, 
+                             description, 
+                             description_match_check(attribute, description, image))
+                confidence_score += (bool_visibility * 1)
+                realism_score += ((bool_visibility * 1) * (bool_description * 1))
+        logging.info("Confidence score is: %s", confidence_score)
+        logging.info("Realism score is: %s", realism_score)
+        if confidence_score > 0 :
+            normalized_attribute_score = realism_score/confidence_score
+        else:
+            normalized_attribute_score = 0
+        logging.info("Normalized attribute score for %s is : %s", image, normalized_attribute_score)
+
+        # Second dimension: Evaluation of visual relations
+
+        logging.info("Evaluation of visual relations")
+        entities_vector = relationships[0]
+        logging.info("Entities vector: %s", entities_vector)
+        relationships_matrix = relationships[1]
+        logging.info("Relationship matrix: %s", relationships_matrix)
+        visibility_check_vector = list(map(lambda x : visibility_check(x, image), entities_vector))
+        logging.info("Visibility check vector: %s", visibility_check_vector)
+        realism_check_vector = list(map(lambda x : realism_check(x, image), entities_vector))
+        logging.info("Realism check vector: %s", realism_check_vector)
+        if (False in visibility_check_vector) or (False in realism_check_vector):
+            relationship_score = 0
+        else:
+            counter_i = 0
+            N = len(entities_vector)
+            while counter_i < N:
+                counter_j = 0
+                entity_i = entities_vector[counter_i]
+
+                while counter_j < N:
+                    if counter_i != counter_j:
+                        entity_j = entities_vector[counter_j]
+                        relation = relationships_matrix[counter_i][counter_j]
+                        if relation != ' ':
+                            bool_relation = relationship_check(entity_i, entity_j, relation)
+                            relationship_score += (bool_relation * 1)
+                    counter_j += 1
+                relationship_score += visibility_check_vector[counter_i] * 1 + realism_check_vector[counter_i] * 1
+                counter_i += 1
+        logging.info("Relationship score for %s is: %s", image, relationship_score)
+
+
+
+
+                
+
+
+
 
 
 if __name__ == "__main__":
     main()
+
+"""
+For second dimension:
+
+Params: List of n entities (str) and matrix nxn (list of lists) with the relations
+
+Entities e_i and e_j and their relationship r_ij. Matrix. Not simmetric.
+Counterexample: It's not the same "a person holding a pen" than "a pen holding a person"
+"""
