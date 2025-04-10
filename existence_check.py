@@ -95,7 +95,7 @@ def existence_check(object, image):
     """
     prompt = "Is there " + str(object) + " in the image?"
     answer = query_vlm(image, prompt)
-    if ("yes" or "Yes") in answer:
+    if "yes" in answer.lower():
         return True
     else: 
         return False
@@ -131,7 +131,7 @@ def description_match_check(attribute, description, image):
     if visibility_check(attribute, image):
         prompt = "Is the " + str(attribute) + str(description) + " ?"
         answer = query_vlm(image, prompt)
-        if ("yes" or "Yes") in answer:
+        if "yes" in answer.lower():
             return True
         else: 
             return False
@@ -149,7 +149,7 @@ def realism_check(entity, image):
     """
     prompt = "Is " + str(entity) + " realistic and natural in this image?"
     answer = query_vlm(image, prompt)
-    if ("yes" or "Yes") in answer:
+    if "yes" in answer.lower():
         return True
     else: 
         return False
@@ -167,24 +167,86 @@ def relationship_check(entity_1, entity_2, relation, image):
     """
     prompt = "Is " + str(entity_1) + " " + str(relation) + " " + str(entity_2) + " in this image?"
     answer = query_vlm(image, prompt)
-    if ("yes" or "Yes") in answer:
+    if "yes" in answer.lower():
         return True
     else: 
         return False
     
 
-"""
-def normalized_attribute_score_function(image, attributes):
-
+def normalized_attribute_score_function(image, object, attributes):
+    """
     Scores the given image 
     Params:
         image: image 
+        object: object to be checked about
         attributes: list of lists with two elements ['attribute','description']
     Returns:
         Integer wich scores the image
-        
+    """  
     confidence_score = 0
-"""
+    realism_score = 0
+    normalized_attribute_score = 0
+    if existence_check(object, image):
+        logging.info("Existence check for %s: %s ", image, existence_check(object,image))     
+        for attribute_pair in attributes:
+            attribute = attribute_pair[0]
+            logging.info('Attribute: %s', attribute)
+            description = attribute_pair[1]
+            logging.info('Description: %s', description)
+            bool_visibility = visibility_check(attribute, image)
+            bool_description = description_match_check(attribute, description, image)
+            logging.info("Description match check for %s with attribute %s and description %s: %s ", 
+                        image, 
+                        attribute, 
+                        description, 
+                        description_match_check(attribute, description, image))
+            confidence_score += (bool_visibility * 1)
+            realism_score += ((bool_visibility * 1) * (bool_description * 1))
+        logging.info("Confidence score is: %s", confidence_score)
+        logging.info("Realism score is: %s", realism_score)
+        if confidence_score > 0 :
+            normalized_attribute_score = realism_score/confidence_score
+    return normalized_attribute_score
+
+
+def relationship_score_function(image, relationships):
+    """
+    Scores the given image 
+    Params:
+        image: image 
+        object: object to be checked about
+        attributes: list of lists with two elements ['attribute','description']
+    Returns:
+        Integer wich scores the image
+    """ 
+    entities_vector = relationships[0]
+    logging.info("Entities vector: %s", entities_vector)
+    relationships_matrix = relationships[1]
+    logging.info("Relationship matrix: %s", relationships_matrix)
+    visibility_check_vector = list(map(lambda x : visibility_check(x, image), entities_vector))
+    logging.info("Visibility check vector: %s", visibility_check_vector)
+    realism_check_vector = list(map(lambda x : realism_check(x, image), entities_vector))
+    logging.info("Realism check vector: %s", realism_check_vector)
+    if (False in visibility_check_vector) or (False in realism_check_vector):
+        relationship_score = 0
+    else:
+        counter_i = 0
+        N = len(entities_vector)
+        while counter_i < N:
+            counter_j = 0
+            entity_i = entities_vector[counter_i]
+            while counter_j < N:
+                if counter_i != counter_j:
+                    entity_j = entities_vector[counter_j]
+                    relation = relationships_matrix[counter_i][counter_j]
+                    if relation != ' ':
+                        bool_relation = relationship_check(entity_i, entity_j, relation)
+                        relationship_score += (bool_relation * 1)
+                counter_j += 1
+            relationship_score += visibility_check_vector[counter_i] * 1 + realism_check_vector[counter_i] * 1
+            counter_i += 1
+    return relationship_score
+
 
 
 def main():
@@ -239,62 +301,13 @@ def main():
         # First dimension: Evaluation of visual attributes
 
         logging.info("Evaluation of visual attributes")
-        confidence_score = 0
-        realism_score = 0
-        if existence_check(object, image):
-            logging.info("Existence check for %s: %s ", image, existence_check(object,image))     
-            for attribute_pair in attributes:
-                attribute = attribute_pair[0]
-                logging.info('Attribute: %s', attribute)
-                description = attribute_pair[1]
-                logging.info('Description: %s', description)
-                bool_visibility = visibility_check(attribute, image)
-                bool_description = description_match_check(attribute, description, image)
-                logging.info("Description match check for %s with attribute %s and description %s: %s ", 
-                             image, 
-                             attribute, 
-                             description, 
-                             description_match_check(attribute, description, image))
-                confidence_score += (bool_visibility * 1)
-                realism_score += ((bool_visibility * 1) * (bool_description * 1))
-        logging.info("Confidence score is: %s", confidence_score)
-        logging.info("Realism score is: %s", realism_score)
-        if confidence_score > 0 :
-            normalized_attribute_score = realism_score/confidence_score
-        else:
-            normalized_attribute_score = 0
+        normalized_attribute_score = normalized_attribute_score_function(image, object, attributes)
         logging.info("Normalized attribute score for %s is : %s", image, normalized_attribute_score)
 
         # Second dimension: Evaluation of visual relations
 
         logging.info("Evaluation of visual relations")
-        entities_vector = relationships[0]
-        logging.info("Entities vector: %s", entities_vector)
-        relationships_matrix = relationships[1]
-        logging.info("Relationship matrix: %s", relationships_matrix)
-        visibility_check_vector = list(map(lambda x : visibility_check(x, image), entities_vector))
-        logging.info("Visibility check vector: %s", visibility_check_vector)
-        realism_check_vector = list(map(lambda x : realism_check(x, image), entities_vector))
-        logging.info("Realism check vector: %s", realism_check_vector)
-        if (False in visibility_check_vector) or (False in realism_check_vector):
-            relationship_score = 0
-        else:
-            counter_i = 0
-            N = len(entities_vector)
-            while counter_i < N:
-                counter_j = 0
-                entity_i = entities_vector[counter_i]
-
-                while counter_j < N:
-                    if counter_i != counter_j:
-                        entity_j = entities_vector[counter_j]
-                        relation = relationships_matrix[counter_i][counter_j]
-                        if relation != ' ':
-                            bool_relation = relationship_check(entity_i, entity_j, relation)
-                            relationship_score += (bool_relation * 1)
-                    counter_j += 1
-                relationship_score += visibility_check_vector[counter_i] * 1 + realism_check_vector[counter_i] * 1
-                counter_i += 1
+        relationship_score = relationship_score_function(image, relationships)
         logging.info("Relationship score for %s is: %s", image, relationship_score)
 
 
