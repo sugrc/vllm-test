@@ -69,10 +69,7 @@ def query_vlm(image, prompt):
         }
         response = requests.post(url, json=payload, headers=headers)
         logging.info("Request sent for: %s", image)
-        #logging.info("Payload sent: %s", payload)
-        #logging.info("URL: %s", url)
         if response.status_code == 200:
-            #logging.info("Answer: %s", response.json())
             content = response.json()
             answer = content['choices'][0]['message']['content']
             logging.info("Answer: %s", answer)
