@@ -112,7 +112,7 @@ def visibility_check(attribute, image):
     """
     prompt = "Can you see " + str(attribute) + " in the image?"
     answer = query_vlm(image, prompt)
-    if ("yes" or "Yes") in answer:
+    if "yes" in answer.lower():
         return True
     else: 
         return False
