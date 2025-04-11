@@ -292,6 +292,7 @@ def main():
         image_path = path + "/" + each
         list_images_path.append(image_path)
     logging.info("List of images: %s", list_images_path)
+    
 
     for image in list_images_path:
 
