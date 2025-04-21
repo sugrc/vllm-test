@@ -196,7 +196,7 @@ def normalized_attribute_score_function(image, object, attributes):
                         image, 
                         attribute, 
                         description, 
-                        description_match_check(attribute, description, image))
+                        bool_description)
             confidence_score += (bool_visibility * 1)
             realism_score += ((bool_visibility * 1) * (bool_description * 1))
         logging.info("Confidence score is: %s", confidence_score)
