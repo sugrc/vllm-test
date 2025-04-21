@@ -8,15 +8,13 @@ import ast
 logging.basicConfig(level=logging.INFO)
 
 
-ip_vllm = os.getenv('IP','http://vllm:8000') 
+ip_vllm = os.getenv("IP", "http://vllm:8000")
 
-model = os.getenv('MODEL','HuggingfaceTB/SmolVLM-256M-Instruct')
+model = os.getenv("MODEL", "HuggingfaceTB/SmolVLM-256M-Instruct")
 
-url= ip_vllm + '/v1/chat/completions'
+url = ip_vllm + "/v1/chat/completions"
 
-headers = {
-    "Content-Type": "application/json"
-}
+headers = {"Content-Type": "application/json"}
 
 
 # --- FUNCTIONS ---
@@ -46,7 +44,7 @@ def query_vlm(image, prompt):
     Params:
         image: name of the image
         prompt: what to analize in the image
-    Returns: 
+    Returns:
         payload in json format
     """
     try:
@@ -55,23 +53,17 @@ def query_vlm(image, prompt):
         payload = {
             "model": model,
             "messages": [
-                {
-                "role": "system",
-                    "content": "You are a vision-language model."
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                    "image": image_json
-                }
+                {"role": "system",
+                 "content": "You are a vision-language model."},
+                {"role": "user", "content": prompt, "image": image_json},
             ],
-            "max_tokens": 50
+            "max_tokens": 50,
         }
         response = requests.post(url, json=payload, headers=headers)
         logging.info("Request sent for: %s", image)
         if response.status_code == 200:
             content = response.json()
-            answer = content['choices'][0]['message']['content']
+            answer = content["choices"][0]["message"]["content"]
             logging.info("Answer: %s", answer)
             return answer
         else:
@@ -94,10 +86,10 @@ def existence_check(object, image):
     answer = query_vlm(image, prompt)
     if "yes" in answer.lower():
         return True
-    else: 
+    else:
         return False
-    
-    
+
+
 def visibility_check(attribute, image):
     """
     Checks the visibility of a given attribute in a given image.
@@ -111,10 +103,10 @@ def visibility_check(attribute, image):
     answer = query_vlm(image, prompt)
     if "yes" in answer.lower():
         return True
-    else: 
+    else:
         return False
-    
-    
+
+
 def description_match_check(attribute, description, image):
     """
     Checks if the given attribute matches the given description in the image
@@ -130,7 +122,7 @@ def description_match_check(attribute, description, image):
         answer = query_vlm(image, prompt)
         if "yes" in answer.lower():
             return True
-        else: 
+        else:
             return False
     return False
 
@@ -148,81 +140,100 @@ def realism_check(entity, image):
     answer = query_vlm(image, prompt)
     if "yes" in answer.lower():
         return True
-    else: 
+    else:
         return False
-    
+
+
 def relationship_check(entity_1, entity_2, relation, image):
     """
     ...
     Params:
         entity_1: entity to be checked
         entity_2:
-        relation: 
+        relation:
         image: image to be analized
     Returns:
         True if ..., False if not.
     """
-    prompt = "Is " + str(entity_1) + " " + str(relation) + " " + str(entity_2) + " in this image?"
+    prompt = (
+        "Is "
+        + str(entity_1)
+        + " "
+        + str(relation)
+        + " "
+        + str(entity_2)
+        + " in this image?"
+    )
     answer = query_vlm(image, prompt)
     if "yes" in answer.lower():
         return True
-    else: 
+    else:
         return False
-    
+
 
 def normalized_attribute_score_function(image, object, attributes):
     """
-    Scores the given image 
+    Scores the given image
     Params:
-        image: image 
+        image: image
         object: object to be checked about
         attributes: list of lists with two elements ['attribute','description']
     Returns:
         Integer wich scores the image
-    """  
+    """
     confidence_score = 0
     realism_score = 0
     normalized_attribute_score = 0
     if existence_check(object, image):
-        logging.info("Existence check for %s: %s ", image, existence_check(object,image))     
+        logging.info(
+            "Existence check for %s: %s ", image, existence_check(object,
+                                                                  image)
+        )
         for attribute_pair in attributes:
             attribute = attribute_pair[0]
-            logging.info('Attribute: %s', attribute)
+            logging.info("Attribute: %s", attribute)
             description = attribute_pair[1]
-            logging.info('Description: %s', description)
+            logging.info("Description: %s", description)
             bool_visibility = visibility_check(attribute, image)
-            bool_description = description_match_check(attribute, description, image)
-            logging.info("Description match check for %s with attribute %s and description %s: %s ", 
-                        image, 
-                        attribute, 
-                        description, 
-                        bool_description)
-            confidence_score += (bool_visibility * 1)
-            realism_score += ((bool_visibility * 1) * (bool_description * 1))
+            bool_description = description_match_check(attribute, description,
+                                                       image)
+            logging.info(
+                "Description match check for %s with attribute %s "
+                "and description %s: %s ",
+                image,
+                attribute,
+                description,
+                bool_description,
+            )
+            confidence_score += bool_visibility * 1
+            realism_score += (bool_visibility * 1) * (bool_description * 1)
         logging.info("Confidence score is: %s", confidence_score)
         logging.info("Realism score is: %s", realism_score)
-        if confidence_score > 0 :
-            normalized_attribute_score = realism_score/confidence_score
+        if confidence_score > 0:
+            normalized_attribute_score = realism_score / confidence_score
     return normalized_attribute_score
 
 
 def relationship_score_function(image, relationships):
     """
-    Scores the given image 
+    Scores the given image
     Params:
-        image: image 
+        image: image
         object: object to be checked about
         attributes: list of lists with two elements ['attribute','description']
     Returns:
         Integer wich scores the image
-    """ 
+    """
     entities_vector = relationships[0]
     logging.info("Entities vector: %s", entities_vector)
     relationships_matrix = relationships[1]
     logging.info("Relationship matrix: %s", relationships_matrix)
-    visibility_check_vector = list(map(lambda x : visibility_check(x, image), entities_vector))
+    visibility_check_vector = list(
+        map(lambda x: visibility_check(x, image), entities_vector)
+    )
     logging.info("Visibility check vector: %s", visibility_check_vector)
-    realism_check_vector = list(map(lambda x : realism_check(x, image), entities_vector))
+    realism_check_vector = list(map(lambda x: realism_check(x, image),
+                                    entities_vector))
     logging.info("Realism check vector: %s", realism_check_vector)
     if (False in visibility_check_vector) or (False in realism_check_vector):
         relationship_score = 0
@@ -236,39 +247,26 @@ def relationship_score_function(image, relationships):
                 if counter_i != counter_j:
                     entity_j = entities_vector[counter_j]
                     relation = relationships_matrix[counter_i][counter_j]
-                    if relation != ' ':
-                        bool_relation = relationship_check(entity_i, entity_j, relation)
-                        relationship_score += (bool_relation * 1)
+                    if relation != " ":
+                        bool_relation = relationship_check(entity_i, entity_j,
+                                                           relation)
+                        relationship_score += bool_relation * 1
                 counter_j += 1
-            relationship_score += visibility_check_vector[counter_i] * 1 + realism_check_vector[counter_i] * 1
+            relationship_score += (
+                visibility_check_vector[counter_i] * 1
+                + realism_check_vector[counter_i] * 1
+            )
             counter_i += 1
     return relationship_score
-
 
 
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument(
-        '--path',
-        type=str,
-        required=True
-    )
-    parser.add_argument(
-        '--object',
-        type=str,
-        required=True
-    )
-    parser.add_argument(
-        '--attributes',
-        type=str,
-        required=True
-    )
-    parser.add_argument(
-        '--relationships',
-        type=str,
-        required=True
-    )
+    parser.add_argument("--path", type=str, required=True)
+    parser.add_argument("--object", type=str, required=True)
+    parser.add_argument("--attributes", type=str, required=True)
+    parser.add_argument("--relationships", type=str, required=True)
     args = parser.parse_args()
 
     path = args.path
@@ -279,34 +277,40 @@ def main():
 
     attributes = ast.literal_eval(args.attributes)
     logging.info("Attributes: %s", attributes)
-    
+
     relationships = ast.literal_eval(args.relationships)
     logging.info("Relationships: %s", relationships)
-    
 
-    list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
+    list_images = [file for file in os.listdir(path)
+                   if file.endswith((".jpg"))]
     logging.info("List of images: %s", list_images)
 
-    list_images_path =[]
+    list_images_path = []
     for each in list_images:
         image_path = path + "/" + each
         list_images_path.append(image_path)
     logging.info("List of images: %s", list_images_path)
-    
 
     for image in list_images_path:
 
         # First dimension: Evaluation of visual attributes
 
         logging.info("Evaluation of visual attributes")
-        normalized_attribute_score = normalized_attribute_score_function(image, object, attributes)
-        logging.info("Normalized attribute score for %s is : %s", image, normalized_attribute_score)
+        normalized_attribute_score = normalized_attribute_score_function(
+            image, object, attributes
+        )
+        logging.info(
+            "Normalized attribute score for %s is : %s",
+            image,
+            normalized_attribute_score,
+        )
 
         # Second dimension: Evaluation of visual relations
 
         logging.info("Evaluation of visual relations")
         relationship_score = relationship_score_function(image, relationships)
-        logging.info("Relationship score for %s is: %s", image, relationship_score)
+        logging.info("Relationship score for %s is: %s", image,
+                     relationship_score)
 
 
 if __name__ == "__main__":
