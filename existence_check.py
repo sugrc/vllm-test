@@ -127,7 +127,7 @@ def does_attribute_match_description(attribute, description, image):
     return False
 
 
-def realism_check(entity, image):
+def is_entity_realistic_in_image(entity, image):
     """
     Checks the realism of a given entity in a given image.
     Params:
@@ -231,7 +231,7 @@ def relationship_score_function(image, relationships):
         map(lambda x: is_attribute_visible_in_image(x, image), entities_vector)
     )
     logging.info("Visibility check vector: %s", visibility_check_vector)
-    realism_check_vector = list(map(lambda x: realism_check(x, image),
+    realism_check_vector = list(map(lambda x: is_entity_realistic_in_image(x, image),
                                     entities_vector))
     logging.info("Realism check vector: %s", realism_check_vector)
     if (False in visibility_check_vector) or (False in realism_check_vector):
