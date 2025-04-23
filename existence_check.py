@@ -90,7 +90,7 @@ def is_object_present_in_image(object, image):
         return False
 
 
-def visibility_check(attribute, image):
+def is_attribute_visible_in_image(attribute, image):
     """
     Checks the visibility of a given attribute in a given image.
     Params:
@@ -117,7 +117,7 @@ def description_match_check(attribute, description, image):
     Returns:
         True if the object is in the image, False if not.
     """
-    if visibility_check(attribute, image):
+    if is_attribute_visible_in_image(attribute, image):
         prompt = "Is the " + str(attribute) + str(description) + " ?"
         answer = query_vlm(image, prompt)
         if "yes" in answer.lower():
@@ -193,7 +193,7 @@ def normalized_attribute_score_function(image, object, attributes):
             logging.info("Attribute: %s", attribute)
             description = attribute_pair[1]
             logging.info("Description: %s", description)
-            bool_visibility = visibility_check(attribute, image)
+            bool_visibility = is_attribute_visible_in_image(attribute, image)
             bool_description = description_match_check(attribute, description,
                                                        image)
             logging.info(
@@ -228,7 +228,7 @@ def relationship_score_function(image, relationships):
     relationships_matrix = relationships[1]
     logging.info("Relationship matrix: %s", relationships_matrix)
     visibility_check_vector = list(
-        map(lambda x: visibility_check(x, image), entities_vector)
+        map(lambda x: is_attribute_visible_in_image(x, image), entities_vector)
     )
     logging.info("Visibility check vector: %s", visibility_check_vector)
     realism_check_vector = list(map(lambda x: realism_check(x, image),
