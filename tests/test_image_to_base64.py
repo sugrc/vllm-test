@@ -1,10 +1,12 @@
 import pytest
 import sys
 import base64
-sys.path.append('/home/a939219/vllm-test')
-from existence_check import image_to_base64
+
+sys.path.append("/home/a939219/vllm-test")
+from realism_evaluation_system import image_to_base64
 
 image_path = "/home/a939219/vllm-test/images/bunny.jpg"
+
 
 def test_image_to_base64():
     try:
