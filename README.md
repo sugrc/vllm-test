@@ -25,7 +25,7 @@ These instructions will get you a copy of the project up and running for develop
 Step by step instructions to install and set up the project on a local machine.
 
 ## Usage
-In the directory where the docker-compose.yaml file is located, run "docker compose up --build"
+In the directory where the docker-compose.yaml file is located, run "docker compose up --build".
 It's recommended to run "docker compose down" after usage.
 
 ## Documentation
