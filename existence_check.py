@@ -144,7 +144,7 @@ def is_entity_realistic_in_image(entity, image):
         return False
 
 
-def relationship_check(entity_1, entity_2, relation, image):
+def is_there_relation_between_entities(entity_1, entity_2, relation, image):
     """
     ...
     Params:
@@ -247,7 +247,7 @@ def relationship_score_function(image, relationships):
                     entity_j = entities_vector[counter_j]
                     relation = relationships_matrix[counter_i][counter_j]
                     if relation != " ":
-                        bool_relation = relationship_check(entity_i, entity_j,
+                        bool_relation = is_there_relation_between_entities(entity_i, entity_j,
                                                            relation)
                         relationship_score += bool_relation * 1
                 counter_j += 1
