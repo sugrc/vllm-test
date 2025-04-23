@@ -107,7 +107,7 @@ def is_attribute_visible_in_image(attribute, image):
         return False
 
 
-def description_match_check(attribute, description, image):
+def does_attribute_match_description(attribute, description, image):
     """
     Checks if the given attribute matches the given description in the image
     Params:
@@ -194,7 +194,7 @@ def normalized_attribute_score_function(image, object, attributes):
             description = attribute_pair[1]
             logging.info("Description: %s", description)
             bool_visibility = is_attribute_visible_in_image(attribute, image)
-            bool_description = description_match_check(attribute, description,
+            bool_description = does_attribute_match_description(attribute, description,
                                                        image)
             logging.info(
                 "Description match check for %s with attribute %s "
