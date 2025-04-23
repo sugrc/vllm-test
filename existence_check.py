@@ -73,7 +73,7 @@ def query_vlm(image, prompt):
         raise e
 
 
-def existence_check(object, image):
+def is_object_present_in_image(object, image):
     """
     Checks the existence of a given object in a given image.
     Params:
@@ -184,11 +184,10 @@ def normalized_attribute_score_function(image, object, attributes):
     confidence_score = 0
     realism_score = 0
     normalized_attribute_score = 0
-    if existence_check(object, image):
+    existence_check = is_object_present_in_image(object, image)
+    if existence_check:
         logging.info(
-            "Existence check for %s: %s ", image, existence_check(object,
-                                                                  image)
-        )
+            "Existence check for %s: %s ", image, existence_check)
         for attribute_pair in attributes:
             attribute = attribute_pair[0]
             logging.info("Attribute: %s", attribute)
