@@ -53,8 +53,7 @@ def query_vlm(image, prompt):
         payload = {
             "model": model,
             "messages": [
-                {"role": "system",
-                 "content": "You are a vision-language model."},
+                {"role": "system", "content": "You are a vision-language model."},
                 {"role": "user", "content": prompt, "image": image_json},
             ],
             "max_tokens": 50,
@@ -186,16 +185,16 @@ def normalized_attribute_score_function(image, object, attributes):
     normalized_attribute_score = 0
     existence_check = is_object_present_in_image(object, image)
     if existence_check:
-        logging.info(
-            "Existence check for %s: %s ", image, existence_check)
+        logging.info("Existence check for %s: %s ", image, existence_check)
         for attribute_pair in attributes:
             attribute = attribute_pair[0]
             logging.info("Attribute: %s", attribute)
             description = attribute_pair[1]
             logging.info("Description: %s", description)
             bool_visibility = is_attribute_visible_in_image(attribute, image)
-            bool_description = does_attribute_match_description(attribute, description,
-                                                       image)
+            bool_description = does_attribute_match_description(
+                attribute, description, image
+            )
             logging.info(
                 "Description match check for %s with attribute %s "
                 "and description %s: %s ",
@@ -231,8 +230,9 @@ def relationship_score_function(image, relationships):
         map(lambda x: is_attribute_visible_in_image(x, image), entities_vector)
     )
     logging.info("Visibility check vector: %s", visibility_check_vector)
-    realism_check_vector = list(map(lambda x: is_entity_realistic_in_image(x, image),
-                                    entities_vector))
+    realism_check_vector = list(
+        map(lambda x: is_entity_realistic_in_image(x, image), entities_vector)
+    )
     logging.info("Realism check vector: %s", realism_check_vector)
     if (False in visibility_check_vector) or (False in realism_check_vector):
         relationship_score = 0
@@ -247,8 +247,9 @@ def relationship_score_function(image, relationships):
                     entity_j = entities_vector[counter_j]
                     relation = relationships_matrix[counter_i][counter_j]
                     if relation != " ":
-                        bool_relation = is_there_relation_between_entities(entity_i, entity_j,
-                                                           relation)
+                        bool_relation = is_there_relation_between_entities(
+                            entity_i, entity_j, relation
+                        )
                         relationship_score += bool_relation * 1
                 counter_j += 1
             relationship_score += (
@@ -280,8 +281,7 @@ def main():
     relationships = ast.literal_eval(args.relationships)
     logging.info("Relationships: %s", relationships)
 
-    list_images = [file for file in os.listdir(path)
-                   if file.endswith((".jpg"))]
+    list_images = [file for file in os.listdir(path) if file.endswith((".jpg"))]
     logging.info("List of images: %s", list_images)
 
     list_images_path = []
@@ -301,8 +301,7 @@ def main():
         logging.info(
             "Normalized attribute score for %s is : %s",
             image,
-            normalized_attribute_score,
-        )
+            normalized_attribute_score)
 
         # Second dimension: Evaluation of visual relations
 
