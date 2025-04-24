@@ -4,7 +4,7 @@ This program checks whether a synthetic image is realistic enough.
 ## Table of Contents
 1. Description
 2. Getting started
-    - Prerrequisites
+    - Prerequisites
         * Software
         * Hardware
     - Installation
