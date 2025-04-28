@@ -12,9 +12,7 @@ This program checks whether a synthetic image is realistic enough.
 5. Documentation
 6. API documentation
 7. Testing
-8. Roadmap
-9. Contribution
-10. License
+
 
 
 ## Description
@@ -26,9 +24,7 @@ This project evaluates if a synthetic image is realistic enough using VQA.
 
 #### Software
 - Python 3.12
-- vLLM
 - Docker and Docker compose
-- Linux or WSL
 
 #### Hardware
 - 24GB RAM
@@ -46,16 +42,6 @@ It's recommended to run \docker compose down\'' after usage.
 ## Documentation
 This program was implemented based on the paper REAL: Realism Evaluation of Text-to-Image Generation Models for Effective Data Augmentation which can be found in the next link: https://arxiv.org/abs/2502.10663#:~:text=To%20address%20this%20gap%2C%20we%20propose%20REAL%2C%20an,visual%20attributes%2C%20unusual%20visual%20relationships%2C%20and%20visual%20styles. 
 
-## API documentation
-
 
 ## Testing
-This project includes one unit test to verify the correctness of a function. This test is implemented using PyTest.
-
-## Roadmap
-
-
-## Contribution
-
-
-## License
+This project includes one unit test to verify the correctness of a function. This test is implemented using PyTest and can be run in the main directory with \pytest\''.
