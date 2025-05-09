@@ -1,20 +1,20 @@
 import pytest
 import sys
+import os
 import base64
 import requests
 
-sys.path.append("/home/a939219/vllm-test")
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from realism_evaluation_system import image_to_base64
 
-image_url = "https://picsum.photos/200/300"
-
+image_path = "./tests/images_test/image1.jpg"
 
 def test_image_to_base64():
     try:
-        response = requests.get(image_url)
-        response.raise_for_status()
-        expected_output = base64.b64encode(response.content).decode("utf-8")
-        assert image_to_base64(image_url) == expected_output
+        with open(image_path, "rb") as image_file:
+            expected_output = base64.b64encode(image_file.read()).decode("utf-8")
+            assert image_to_base64(image_path) == expected_output
     except Exception as e:
         print(f"Error: {e}")
         return None
