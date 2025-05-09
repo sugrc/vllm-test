@@ -6,8 +6,8 @@ WORKDIR /app
 
 COPY poetry.lock .
 COPY pyproject.toml .
-COPY existence_check.py .
+COPY realism_evaluation_system.py .
 
 RUN poetry install --no-root 
 
-CMD ["python3","existence_check.py"]
+CMD ["python3","realism_evaluation_system.py"]
